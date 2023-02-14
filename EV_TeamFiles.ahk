@@ -87,7 +87,7 @@ If (version!=AppVersion)
 }
 
 UserQuery := []
-Cols := "tblUser.User_ID,tblUser.UserName,tblUser.TechNumber,tblUser.TeamNumber,tblUserRoleAccess.Uber,tblUserRoleAccess.Lead,tblUserRoleAccess.Admin,tblUserRoleAccess.SupOIC,tblUserRoleAccess.Coord,tblUserRoleAccess.SubTL" 
+Cols := "tblUser.User_ID,tblUser.UserName,tblUser.TechNumber,tblUser.TeamNumber,tblUserRoleAccess.Uber,tblUserRoleAccess.Lead,tblUserRoleAccess.Admin,tblUserRoleAccess.SupOIC,tblUserRoleAccess.Coord,tblUserRoleAccess.SubTL,tblUserRoleAccess.Traffic" 
 Table1 := "tblUser"
 Table2 := "tblUserRoleAccess"
 InnerJoin := "tblUser.User_ID = tblUserRoleAccess.RoleAccess_ID"
@@ -104,9 +104,10 @@ RoleAccessAdmin := UserQuery[7]
 RoleAccessSupOIC := UserQuery[8]
 RoleAccessCoord := UserQuery[9]
 RoleAccessSubTL := UserQuery[10]
+RoleAccessTraffic := UserQuery[11]
 
 ;Nag add ako role ko ng isa pang validition 
-if (RoleAccessUber != 1 && RoleAccessLead != 1 && RoleAccessAdmin != 1 && RoleAccessSupOIC != 1 && RoleAccessCoord != 1 && RoleAccessSubTL != 1)
+if (RoleAccessUber != 1 && RoleAccessLead != 1 && RoleAccessAdmin != 1 && RoleAccessSupOIC != 1 && RoleAccessCoord != 1 && RoleAccessSubTL != 1 && RoleAccessTraffic != 1)
 {
   MsgBox, 262192, %title%, You are not allowed to use this tool.
   ExitApp
@@ -117,7 +118,7 @@ RoleQuery := SQL.Query("SELECT tblPrefRole.RoleName FROM tblUserRole INNER JOIN 
 Role := RoleQuery[1]
 
 Menu, Tray, NoStandard
-Menu, Tray, Tip, F12 - Toggle Transparent`nF11 - Toggle Always On Top`nF2 to copy filename`nDoubleclik files to open folder`nOr right click for menu`nAuto update is 5mins interval`nClick Update for manual update
+Menu, Tray, Tip, F12 - Toggle Transparent`nF11 - Toggle Always On Top`nF2 to copy filename`nDoubleclick files to open folder`nOr right click for menu`nAuto update is 5mins interval`nClick Update for manual update
 Menu, Tray, Add, Exit, GuiClose
 
 
@@ -140,10 +141,10 @@ Loop, %TeamLimit%
 	TeamNumSelect .= A_Index . "|"
 Gui, Add, ComboBox, ys R20 w55 hwndhc vTeamNum Choose%TeamNumber%  +0x40, %TeamNumSelect%
 SendMessage, 0xC5, 3, 0, Edit1, AHK_ID %hc%
-if (RoleAccessUber!=1)
+if (RoleAccessUber != 1 && RoleAccessAdmin !=1 && RoleAccessSupOIC != 1 && RoleAccessCoord != 1 && RoleAccessTraffic != 1)
 	GuiControl, Disable, TeamNum
 Gui, Font, cGreen s10, Courier
-Gui, Add, Button, gUpdate vButton w55, OK
+Gui, Add, Button, gUpdate vButton w55 Default, OK
 Gui, Add, Text, xs y+1,
 Gui, Show, x1500 y155 AutoSize, %title%
 Return
@@ -171,9 +172,9 @@ If (T = 1)
 
 WinSet, TransColor, 141414
 Gui, Font, cGreen s20, Courier
-Gui, Add, Text, vTeam cGreen, TEAM %TeamNum%
+Gui, Add, Text, vTeam gTeamSelect cGreen, TEAM %TeamNum%
 Gui, Font, cGreen s10, Courier
-Gui, Add, Button, xm+220 yp w80 gRefresh vBupdate, &Update
+Gui, Add, Button, xm+225 yp w80 gRefresh vBupdate, Update
 TeamQuery := []
 TeamQuery := SQL.Query("SELECT TeamName FROM tblPrefTeamName WHERE TeamNumber = " TeamNum " ")
 TeamName := TeamQuery[1]
@@ -191,31 +192,34 @@ Gui Color, , 141414
 Gui, Font, cGreen s10, Courier
 Gui, Add, CheckBox, xm y+3 Section Checked1 vLiveCheck gLiveCheck, Live:
 Gui, Add, Text, x+5 cGreen vVlivefiles, ...
-Gui, Add, Text, xm+120 ys, New   : 
+Gui, Add, Text, xm+117 ys, New   : 
 Gui, Add, Text, x+5 yp cGreen vVcountnw, ...
-Gui, Add, Text, xm+225 ys, Tech : 
-Gui, Add, Text, x+5 cGreen vVtechcount, ...
-Gui, Add, CheckBox, xm y+3 Section Checked1 vP4Check gP4Check,     P4  :
-Gui, Add, Text, x+5 cGreen vVp4, ...
-Gui, Add, Text, xm+120 ys, InProg: 
-Gui, Add, Text, x+5 yp cGreen vVcountip, ...
 Gui, Add, Text, xm+225 ys, Files: 
 Gui, Add, Text, x+5 cGreen vVfilecount, ...
+Gui, Add, CheckBox, xm y+3 Section Checked1 vP4Check gP4Check,     P4  :
+Gui, Add, Text, x+5 cGreen vVp4, ...
+Gui, Add, Text, xm+117 ys, InProg: 
+Gui, Add, Text, x+5 yp cGreen vVcountip, ...
+Gui, Add, Text, xm+225 ys, TC   : 
+Gui, Add, Text, x+5 cGreen vVTech, ...
 Gui, Add, CheckBox, xm y+3 Section vTrainingCheck gTrainingCheck,  Test:
 Gui, Add, Text, x+5 cGreen vVtrainingfiles, ...
-Gui, Add, Text, xm+120 ys, Rework: 
+Gui, Add, Text, xm+117 ys, Rework: 
 Gui, Add, Text, x+5 yp cGreen vVcountrw, ...
+Gui, Add, Text, xm+225 ys, QC   : 
+Gui, Add, Text, x+5 cGreen vVQC, ...
 Gui, Add, Text, xs y+1, --------------------------------------
 
-Gui, Add, ListView,xs y+3 vLV gLV -ReadOnly -E0x200 w300 -Hdr,Filenumb|FT|ProdType|TechNo|Box|Path|Prio
+Gui, Add, ListView,xs y+3 vLV gLV -ReadOnly -E0x200 w305 -Hdr,Filenumb|FT|ProdType|TechNo|RB|Box|Path|Prio
 LV_ModifyCol("Hdr")
 LV_ModifyCol(1,"Hdr")
 LV_ModifyCol(2,"Hdr")
 LV_ModifyCol(3,"Hdr")
 LV_ModifyCol(4,"Hdr")
-LV_ModifyCol(5,"AutoHdr")
-LV_ModifyCol(6,"0 Integer")
+LV_ModifyCol(5,"Hdr")
+LV_ModifyCol(6,"AutoHdr")
 LV_ModifyCol(7,"0 Integer")
+LV_ModifyCol(8,"0 Integer")
 LV_ModifyCol("Left")
 
 Menu, MyContextMenu, Add, Copy Filenumber, CopyFilenum
@@ -224,6 +228,7 @@ Menu, SubMenu, Add, Filenumber, FilenumSort
 Menu, SubMenu, Add, Priority, PrioritySort
 Menu, SubMenu, Add, Product, ProductSort
 Menu, SubMenu, Add, Tech, TechSort
+Menu, SubMenu, Add, Role, RoleSort
 Menu, MyContextMenu, Add, Sort By, :Submenu
 
 Refresh:
@@ -246,6 +251,7 @@ ArrayList := []
 listboxarray := []
 ArrayTech := []
 ArrayLink := []
+ArrayRoleBox := []
 ArrayBox := []
 ArrayFilenum := []
 ArrayFileType := []
@@ -257,6 +263,116 @@ ArrayTraining := []
 
 FileList := ""
 SPath := "S:\1_InBox\Day Shift\*TCT"
+rolebox := "TC"
+Gosub ParseFiles
+FileList := ""
+SPath := "S:\2_Measured\QC\*QCT"
+rolebox := "QC"
+Gosub ParseFiles
+
+totalfiles := countnw+countip+countrw
+
+GuiControl, Text, Vlivefiles, %livefiles%
+GuiControl,, Vp4, %p4%
+GuiControl,, Vtrainingfiles, %trainingfiles%
+GuiControl,, Vtechcount, %techcount%
+GuiControl,, Vfilecount, %totalfiles%
+GuiControl,, Vcountnw, %countnw%
+GuiControl,, Vcountip, %countip%
+GuiControl,, Vcountrw, %countrw%
+GuiControl, Font, Tupdate,
+FormatTime, TimeString, , h:mm:ss tt
+GuiControl,, Tupdate, Last update: %TimeString%
+GuiControl,, Bupdate, Update
+GuiControl, Show, BUpdate
+
+Reload:
+countnw := 0
+countip := 0
+countrw := 0
+TCcount := 0
+QCcount := 0
+LV_Delete()
+Gui, Submit, NoHide
+GuiControlGet, LiveCheckX,, LiveCheck
+GuiControlGet, P4CheckX,, P4Check
+GuiControlGet, TrainingCheckX,, TrainingCheck
+
+For index, element in ArrayTech
+	{
+		rowcount := 0
+		listboxarray .= ArrayList[A_Index] "|"
+		LV_Add("",ArrayFilenum[A_Index],ArrayFileType[A_Index],ArrayProductType[A_Index],ArrayTech[A_Index],ArrayRoleBox[A_Index],ArrayBox[A_Index],ArrayLink[A_Index],ArrayFilePrio[A_Index])
+		rowcount := LV_GetCount()
+		LV_GetText(PrioText, rowcount, 8)
+		If (LiveCheckX=0)
+			{
+			If (PrioText="Live")
+				LV_Delete(rowcount)
+			}
+		If (P4CheckX=0)
+			{
+			If (PrioText="P4")
+				LV_Delete(rowcount)
+			}
+		If (TrainingCheckX=0)
+			{
+			If (PrioText="Training")
+				LV_Delete(rowcount)
+			}
+	}
+LV_ModifyCol(2,"Sort")
+
+Loop % LV_GetCount()
+{
+    LV_GetText(RetrievedText, A_Index, 6)
+    if InStr(RetrievedText, "New")
+        ++countnw
+}
+GuiControl,, Vcountnw, %countnw%
+Loop % LV_GetCount()
+{
+    LV_GetText(RetrievedText, A_Index, 6)
+    if InStr(RetrievedText, "InP")
+        ++countip
+}
+GuiControl,, Vcountip, %countip%
+Loop % LV_GetCount()
+{
+    LV_GetText(RetrievedText, A_Index, 6)
+    if InStr(RetrievedText, "Rwk")
+        ++countrw
+}
+GuiControl,, Vcountrw, %countrw%
+totalfiles := countnw+countip+countrw
+GuiControl,, Vfilecount, %totalfiles%
+Loop % LV_GetCount()
+{
+    LV_GetText(RetrievedText, A_Index, 5)
+    if InStr(RetrievedText, "TC")
+        ++TCcount
+}
+GuiControl,, VTech, %TCcount%
+Loop % LV_GetCount()
+{
+    LV_GetText(RetrievedText, A_Index, 5)
+    if InStr(RetrievedText, "QC")
+        ++QCcount
+}
+GuiControl,, VQC, %QCcount%
+
+
+rowcount := LV_GetCount()
+excess := rowcount-5
+if (rowcount > 35)
+	GuiControl, Move, LV, % "h600" . "w305"
+else
+	GuiControl, Move, LV, % "h" . (85+(excess*17)) . "w305"
+Gui, Show, AutoSize NA, %title%
+SetTimer, Refresh, 300000
+Return
+
+ParseFiles:
 Loop, Files, %SPath%%TeamNum%, D
 {
 	FileList .= A_LoopFileName "`n"
@@ -308,67 +424,7 @@ Loop, Files, %SPath%%TeamNum%, D
 		techcountrw := 0
 		totalfiles := countnw+countip+countrw
 }
-totalfiles := countnw+countip+countrw
-
-GuiControl, Text, Vlivefiles, %livefiles%
-GuiControl,, Vp4, %p4%
-GuiControl,, Vtrainingfiles, %trainingfiles%
-GuiControl,, Vtechcount, %techcount%
-GuiControl,, Vfilecount, %totalfiles%
-GuiControl,, Vpriocount, %livefiles%
-GuiControl,, Vcountnw, %countnw%
-GuiControl,, Vcountip, %countip%
-GuiControl,, Vcountrw, %countrw%
-GuiControl, Font, Tupdate,
-GuiControl,, Tupdate, Last update: %A_Hour%:%A_Min%:%A_Sec%
-GuiControl,, Bupdate, Update
-GuiControl, Show, BUpdate
-
-Reload:
-LV_Delete()
-Gui, Submit, NoHide
-GuiControlGet, LiveCheckX,, LiveCheck
-GuiControlGet, P4CheckX,, P4Check
-GuiControlGet, TrainingCheckX,, TrainingCheck
-
-For index, element in ArrayTech
-	{
-		rowcount := 0
-		listboxarray .= ArrayList[A_Index] "|"
-		LV_Add("",ArrayFilenum[A_Index],ArrayFileType[A_Index],ArrayProductType[A_Index],ArrayTech[A_Index],ArrayBox[A_Index],ArrayLink[A_Index],ArrayFilePrio[A_Index])
-		rowcount := LV_GetCount()
-		LV_GetText(PrioText, rowcount, 7)
-		If (LiveCheckX=0)
-			{
-			If (PrioText="Live")
-				LV_Delete(rowcount)
-			}
-		If (P4CheckX=0)
-			{
-			If (PrioText="P4")
-				LV_Delete(rowcount)
-			}
-		If (TrainingCheckX=0)
-			{
-			If (PrioText="Training")
-				LV_Delete(rowcount)
-			}
-	}
-
-
-LV_ModifyCol(2,"Sort")
-
-
-rowcount := LV_GetCount()
-excess := rowcount-5
-if (rowcount > 35)
-	GuiControl, Move, LV, % "h600" . "w300"
-else
-	GuiControl, Move, LV, % "h" . (85+(excess*17)) . "w300"
-Gui, Show, AutoSize NA, %title%
-SetTimer, Refresh, 300000
 Return
-
 
 
 LiveCheck:
@@ -387,7 +443,8 @@ GetPos3 := InStr(A_LoopFileName, "_", false, 1, 2)+1		; 2nd underscore to Right
 GetPos4 := InStr(A_LoopFileName, "_", false, 1, 3)-1		; 3rd underscore to Left
 GetPos5 := GetPos4-GetPos3+1
 GetPos6 := GetPos3-GetPos1-1
-filename := SubStr(A_LoopFileName, 1, GetPos4)
+GetPos7 := InStr(A_LoopFileName, "_", false, 1, 4)-1	    ; 4th underscore 
+filename := SubStr(A_LoopFileName, 1, GetPos7)
 filenum := SubStr(A_LoopFileName, GetPos1, GetPos6)
 filetype := SubStr(A_LoopFileName, 1, GetPos2)
 if (filetype=="P4")
@@ -408,12 +465,15 @@ if filetype not in %filetypelist%
 	fileprio := "Training"
 }
 producttype := SubStr(A_LoopFileName, GetPos3, GetPos5)
+If StrLen(producttype)=1
+		producttype := SubStr(filename, GetPos3, GetPos7)
 techname := SubStr(tech, 1, 6)
 Return
 
 FileDataDisplay:
 ArrayTech.Push(techname)
 ArrayLink.Push(link)
+ArrayRoleBox.Push(rolebox)
 ArrayBox.Push(box)
 ArrayFilenum.Push(filenum)
 ArrayFileType.Push(filetype)
@@ -430,9 +490,6 @@ GuiControl,, Vp4, %p4%
 GuiControl,, Vtrainingfiles, %trainingfiles%
 GuiControl,, Vtechcount, %techcount%
 GuiControl,, Vfilecount, %totalfiles%
-GuiControl,, Vpriocount, %livefiles%
-if (livefiles>0)
-	GuiControl, Font, Vpriocount
 Gui, Font, cGreen s10, Courier
 GuiControl,, Vcountnw, %countnw%
 GuiControl,, Vcountip, %countip%
@@ -491,7 +548,7 @@ OpenFolder:
 FocusedRowNumber := LV_GetNext(0, "F")
 if not FocusedRowNumber
     return
-LV_GetText(fpath, FocusedRowNumber,6)
+LV_GetText(fpath, FocusedRowNumber,7)
 Run, %fpath%
 Return
 
@@ -499,7 +556,7 @@ LV:
 FocusedRowNumber := LV_GetNext(0, "F")
 if not FocusedRowNumber
     return
-LV_GetText(fpath, FocusedRowNumber,6)
+LV_GetText(fpath, FocusedRowNumber,7)
 Run, %fpath%
 Return
 
@@ -522,9 +579,20 @@ TechSort:
 LV_ModifyCol(4,"Sort")
 Return
 
+RoleSort:
+LV_ModifyCol(5,"Sort")
+Return
+
 GuiClose:
 ExitApp
 
+TeamSelect:
+If (A_GuiEvent="DoubleClick")
+	{
+		Gui, Destroy
+		Goto TSelect
+	}
+Return
 
 
 class SQLiteObj

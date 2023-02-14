@@ -24,12 +24,9 @@ Hope it helps! :)
 #SingleInstance Force
 
 title = EV_TeamFiles
-version = 1.0.0.3
+version = 1.0.0.4
 
 ;nilayan ko nito para mdaling iswitch ng enveronment. need lang din gumamit ng shortcut, immodify lang din yung target para gumana.
-
-/*
-
 
 DatabaseName = % A_Args[1]
 
@@ -44,9 +41,7 @@ if (A_Args[1] != "production")
 
 ;~ DatabaseName = mainline
 
-*/
-;~ 
-DatabaseName = production
+;~ DatabaseName = production
 
 PCUserName = %A_UserName%
 
@@ -118,7 +113,7 @@ RoleQuery := SQL.Query("SELECT tblPrefRole.RoleName FROM tblUserRole INNER JOIN 
 Role := RoleQuery[1]
 
 Menu, Tray, NoStandard
-Menu, Tray, Tip, F12 - Toggle Transparent`nF11 - Toggle Always On Top`nF2 to copy filename`nDoubleclick files to open folder`nOr right click for menu`nAuto update is 5mins interval`nClick Update for manual update
+Menu, Tray, Tip, F12 - Toggle Transparent `nF11 - Toggle Always On Top `nF2 to copy filename `nDoubleclick files to open folder `nOr right click for menu `nAuto update is 5mins interval `nClick Update for manual update
 Menu, Tray, Add, Exit, GuiClose
 
 
